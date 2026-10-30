@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JSON · ng.foo.ng</title>
+  <meta name="description" content="Format, minify, sort and validate JSON in your browser, with exact error positions and big numbers kept intact.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    #output, #input { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+    #status .btn { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Encode &amp; decode</p>
+      <h1>JSON</h1>
+      <p class="lede">Format, minify and validate JSON. Errors point at the exact line and column, and big numbers, escapes and key order come out exactly as they went in.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="What to do" id="mode">
+        <button type="button" data-value="format" aria-pressed="true">Format</button>
+        <button type="button" data-value="minify" aria-pressed="false">Minify</button>
+        <button type="button" data-value="escape" aria-pressed="false">Escape as string</button>
+        <button type="button" data-value="unescape" aria-pressed="false">Unescape</button>
+      </div>
+      <div class="seg" role="group" aria-label="Indent" id="indent">
+        <button type="button" data-value="2" aria-pressed="true">2 spaces</button>
+        <button type="button" data-value="4" aria-pressed="false">4 spaces</button>
+        <button type="button" data-value="tab" aria-pressed="false">Tab</button>
+      </div>
+      <span class="spacer"></span>
+      <label class="check" id="sort-wrap"><input type="checkbox" id="sort"> Sort keys</label>
+      <label class="check" id="jsonc-wrap"><input type="checkbox" id="jsonc"> Allow comments and trailing commas</label>
+    </div>
+
+    <section class="grid-2" aria-label="JSON">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="input" id="input-title">Input</label>
+          <button class="btn sm" type="button" id="sample">Sample</button>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+          <button class="btn sm" type="button" data-copy="#input">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="input" spellcheck="false" autocomplete="off" placeholder="Paste JSON here…"></textarea>
+        </div>
+        <div class="pane-foot"><span id="input-info"></span></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="output" id="output-title">Output</label>
+          <button class="btn sm" type="button" id="download">Download .json</button>
+          <button class="btn sm" type="button" data-copy="#output">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="output" spellcheck="false" readonly placeholder="The result shows up here"></textarea>
+        </div>
+        <div class="pane-foot"><span id="output-info"></span></div>
+      </div>
+
+      <div class="full" role="status" aria-live="polite">
+        <div class="msg" id="status"></div>
+      </div>
+    </section>
+    <p class="hint">Comments are dropped from the output. Everything stays in your browser.</p>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

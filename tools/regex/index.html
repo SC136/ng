@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regex · ng.foo.ng</title>
+  <meta name="description" content="Test JavaScript regular expressions in your browser: live match highlighting, numbered and named groups, and replacement previews.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .pattern-box { display: flex; align-items: center; gap: 6px; }
+    .pattern-box .slash { font: 500 1.1rem/1 var(--font-mono); color: var(--ink-3); }
+    #flags-shown { font: 500 0.95rem/1 var(--font-mono); color: var(--accent-text); min-width: 2ch; }
+    #pattern { font-family: var(--font-mono); font-size: 0.95rem; }
+    .flags { gap: 6px 14px; }
+    .flags .check b { font-family: var(--font-mono); color: var(--ink); }
+    #highlight { min-height: 260px; max-height: 520px; overflow: auto; }
+    #highlight mark { box-shadow: 0 0 0 1px var(--accent); }
+    #highlight mark.alt { background: color-mix(in srgb, var(--indigo) 22%, transparent); box-shadow: 0 0 0 1px var(--indigo); }
+    #highlight .zw {
+      display: inline-block; width: 2px; height: 1.25em; margin: 0 -1px;
+      vertical-align: text-bottom; background: var(--accent); border-radius: 1px;
+    }
+    #matches td.none { color: var(--ink-3); }
+    #matches td { white-space: pre-wrap; }
+    #preview { min-height: 80px; max-height: 360px; overflow: auto; }
+    details.pane > summary { list-style: none; }
+    details.pane > summary::-webkit-details-marker { display: none; }
+    details.pane > summary::after { content: "Show"; font-size: 0.8rem; color: var(--ink-3); }
+    details.pane[open] > summary::after { content: "Hide"; }
+    details.pane:not([open]) > summary { border-bottom: 0; }
+    .cheat { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 20px; }
+    .cheat h3 { margin: 10px 0 6px; }
+    .cheat dl { margin: 0; }
+    .cheat code { color: var(--accent-text); }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Text</p>
+      <h1>Regex</h1>
+      <p class="lede">Test a JavaScript regular expression against some text. Matches highlight as you type, with every group listed and a preview of replacements.</p>
+    </header>
+
+    <section class="pane" aria-label="Pattern">
+      <div class="pane-head">
+        <label class="pane-title" for="pattern">Pattern</label>
+        <button class="btn sm" type="button" id="sample">Sample</button>
+        <button class="btn sm" type="button" data-copy="#literal">Copy as literal</button>
+      </div>
+      <div class="pane-body">
+        <div class="pattern-box">
+          <span class="slash" aria-hidden="true">/</span>
+          <input type="text" id="pattern" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="e.g. (?&lt;word&gt;\w+)@(\w+)\.com">
+          <span class="slash" aria-hidden="true">/</span>
+          <span id="flags-shown" aria-hidden="true"></span>
+        </div>
+        <div class="row flags" role="group" aria-label="Flags" id="flags">
+          <label class="check" title="Find every match, not just the first"><input type="checkbox" id="flag-g" data-flag="g"> <b>g</b> global</label>
+          <label class="check" title="Letters match in either case"><input type="checkbox" id="flag-i" data-flag="i"> <b>i</b> ignore case</label>
+          <label class="check" title="^ and $ match at each line break"><input type="checkbox" id="flag-m" data-flag="m"> <b>m</b> multiline</label>
+          <label class="check" title=". also matches line breaks"><input type="checkbox" id="flag-s" data-flag="s"> <b>s</b> dot all</label>
+          <label class="check" title="Treat the pattern as Unicode code points"><input type="checkbox" id="flag-u" data-flag="u"> <b>u</b> unicode</label>
+          <label class="check" title="Unicode mode with set operations in character classes" id="flag-v-label"><input type="checkbox" id="flag-v" data-flag="v"> <b>v</b> unicode sets</label>
+          <label class="check" title="Match only at the current position"><input type="checkbox" id="flag-y" data-flag="y"> <b>y</b> sticky</label>
+          <label class="check" title="Record where each group starts and ends"><input type="checkbox" id="flag-d" data-flag="d"> <b>d</b> indices</label>
+        </div>
+        <p class="hint">As a literal: <code id="literal"></code></p>
+        <p class="msg" id="pattern-msg" role="alert"></p>
+      </div>
+    </section>
+
+    <section class="grid-2" aria-label="Test text and matches">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="text">Test text</label>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="text" spellcheck="false" placeholder="Paste text to search…"></textarea>
+        </div>
+        <div class="pane-foot"><span id="text-info"></span></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <span class="pane-title" id="highlight-title">Matches</span>
+          <span class="badge" id="count" role="status" aria-live="polite">No matches</span>
+        </div>
+        <div class="pane-body flush">
+          <div class="out" id="highlight" aria-labelledby="highlight-title"></div>
+        </div>
+        <div class="pane-foot"><span class="hint">Thin bars mark empty matches. Neighbouring matches alternate color and outline.</span></div>
+      </div>
+    </section>
+
+    <p class="msg" id="run-msg" role="status" aria-live="polite"></p>
+
+    <section class="pane" aria-label="Match details">
+      <div class="pane-head">
+        <span class="pane-title">Match details</span>
+      </div>
+      <div class="pane-body">
+        <div class="table-wrap" id="matches"><p class="empty">Matches and their groups appear here.</p></div>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Replace">
+      <div class="pane-head">
+        <label class="pane-title" for="replacement">Replace with</label>
+        <button class="btn sm" type="button" data-copy="#preview">Copy result</button>
+      </div>
+      <div class="pane-body">
+        <input type="text" id="replacement" class="mono" spellcheck="false" autocomplete="off" placeholder="e.g. $2 or $&lt;word&gt;">
+        <p class="hint">Use <code>$1</code> for a numbered group, <code>$&lt;name&gt;</code> for a named one, <code>$&amp;</code> for the whole match and <code>$$</code> for a dollar sign. Leave it empty to remove the matches. Without the g flag only the first match is replaced.</p>
+        <div class="field">
+          <span id="preview-label">Result</span>
+          <div class="out" id="preview" aria-labelledby="preview-label"></div>
+        </div>
+      </div>
+    </section>
+
+    <details class="pane">
+      <summary class="pane-head"><span class="pane-title">Syntax cheat sheet</span></summary>
+      <div class="pane-body cheat">
+        <div>
+          <h3>Characters</h3>
+          <dl class="kv">
+            <dt><code>.</code></dt><dd>Any character except line breaks (all with s)</dd>
+            <dt><code>\d \w \s</code></dt><dd>Digit, word character, whitespace</dd>
+            <dt><code>\D \W \S</code></dt><dd>Not a digit, word character, whitespace</dd>
+            <dt><code>[abc]</code></dt><dd>Any of a, b or c</dd>
+            <dt><code>[^a-z]</code></dt><dd>Anything but a to z</dd>
+            <dt><code>\p{L}</code></dt><dd>Any letter (needs u or v)</dd>
+            <dt><code>\t \n é</code></dt><dd>Tab, newline, code unit</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>Anchors</h3>
+          <dl class="kv">
+            <dt><code>^ $</code></dt><dd>Start and end of text (of each line with m)</dd>
+            <dt><code>\b \B</code></dt><dd>Word boundary, not a word boundary</dd>
+          </dl>
+          <h3>Quantifiers</h3>
+          <dl class="kv">
+            <dt><code>* + ?</code></dt><dd>0 or more, 1 or more, 0 or 1</dd>
+            <dt><code>{3} {2,} {2,5}</code></dt><dd>Exactly 3, 2 or more, 2 to 5</dd>
+            <dt><code>*? +?</code></dt><dd>Lazy: as few as possible</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>Groups</h3>
+          <dl class="kv">
+            <dt><code>(abc)</code></dt><dd>Capture group</dd>
+            <dt><code>(?&lt;name&gt;abc)</code></dt><dd>Named group</dd>
+            <dt><code>(?:abc)</code></dt><dd>Group without capturing</dd>
+            <dt><code>\1 \k&lt;name&gt;</code></dt><dd>Back-reference</dd>
+            <dt><code>a|b</code></dt><dd>a or b</dd>
+          </dl>
+          <h3>Lookaround</h3>
+          <dl class="kv">
+            <dt><code>(?=x) (?!x)</code></dt><dd>Followed by x, not followed by x</dd>
+            <dt><code>(?&lt;=x) (?&lt;!x)</code></dt><dd>Preceded by x, not preceded by x</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tools · ng.foo.ng</title>
+  <meta name="description" content="Small, fast tools for developers and hardware tinkerers. Everything runs in your browser.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module">
+    import { mountToolGrid } from '/assets/hub.js';
+    mountToolGrid(document.querySelector('#grid'), document.querySelector('#search'));
+  </script>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/">ng.foo.ng</a> / Tools</p>
+      <h1>Tools</h1>
+      <p class="lede">Small tools for code, text, time, color and hardware. They all run in your browser and work offline once loaded.</p>
+    </header>
+    <div class="searchbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="search" placeholder="Filter tools…" aria-label="Filter tools" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="grid"></div>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

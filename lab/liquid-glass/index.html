@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Glass Effect</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Liquid Glass</h1>
+    <p class="subtitle">Cross-browser refraction via SVG feDisplacementMap</p>
+  </header>
+
+  <main>
+    <!-- Demo 1: Draggable glass lens over content -->
+    <section class="demo-card">
+      <h2>Draggable Glass Lens</h2>
+      <div class="glass-container" id="lensDemo">
+        <div class="content-layer">
+          <div class="color-grid">
+            <div class="grid-item" style="background:#e63946">Drag</div>
+            <div class="grid-item" style="background:#457b9d">the</div>
+            <div class="grid-item" style="background:#2a9d8f">glass</div>
+            <div class="grid-item" style="background:#e9c46a">lens</div>
+            <div class="grid-item" style="background:#f4a261">over</div>
+            <div class="grid-item" style="background:#264653">this</div>
+            <div class="grid-item" style="background:#6a4c93">grid</div>
+            <div class="grid-item" style="background:#1982c4">to</div>
+            <div class="grid-item" style="background:#8ac926">see</div>
+          </div>
+        </div>
+        <div class="glass-lens" id="glassLens1"></div>
+      </div>
+    </section>
+
+    <!-- Demo 2: Glass Switch -->
+    <section class="demo-card">
+      <h2>Glass Switch</h2>
+      <div class="switch-container" id="switchDemo">
+        <div class="switch-track" id="switchTrack">
+          <div class="switch-fill" id="switchFill"></div>
+          <div class="switch-thumb" id="switchThumb"></div>
+        </div>
+        <span class="switch-label" id="switchLabel">OFF</span>
+      </div>
+    </section>
+
+    <!-- Demo 3: Glass Slider -->
+    <section class="demo-card">
+      <h2>Glass Slider</h2>
+      <div class="slider-container" id="sliderDemo">
+        <div class="slider-track">
+          <div class="slider-fill" id="sliderFill"></div>
+          <div class="slider-thumb" id="sliderThumb"></div>
+        </div>
+        <div class="slider-value" id="sliderValue">50</div>
+      </div>
+    </section>
+
+    <!-- Demo 4: Glass over text -->
+    <section class="demo-card">
+      <h2>Glass Over Text</h2>
+      <div class="glass-container" id="textDemo">
+        <div class="content-layer text-content">
+          <h3>The quick brown fox</h3>
+          <p>jumps over the lazy dog. This text remains selectable
+             even under the glass effect because we use SVG filters
+             on live DOM content.</p>
+          <p class="highlight">Try selecting this text through the glass!</p>
+        </div>
+        <div class="glass-lens" id="glassLens2"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Controls -->
+  <aside class="controls">
+    <h3>Glass Parameters</h3>
+    <label>Scale <input type="range" id="ctrlScale" min="5" max="40" value="15"></label>
+    <label>Depth <input type="range" id="ctrlDepth" min="1" max="30" value="12"></label>
+    <label>Curvature <input type="range" id="ctrlCurve" min="5" max="80" value="40"></label>
+    <label>Chroma <input type="range" id="ctrlChroma" min="0" max="50" value="15"></label>
+    <label>Specular <input type="range" id="ctrlSpec" min="0" max="50" value="25"></label>
+  </aside>
+
+  <!-- SVG Filters (populated by JS) -->
+  <svg id="filterSvg" width="0" height="0"
+       style="position:absolute;pointer-events:none;overflow:hidden;">
+    <defs id="filterDefs"></defs>
+  </svg>
+
+  <script src="glass.js"></script>
+  <a href="/lab/" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;padding:7px 11px;border-radius:9px;background:rgba(20,16,12,.78);color:#f7f2e6;font:500 12px/1 ui-monospace,Menlo,Consolas,monospace;text-decoration:none;backdrop-filter:blur(6px)">&larr; ng.foo.ng/lab</a>
+</body>
+</html>

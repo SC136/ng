@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hash · ng.foo.ng</title>
+  <meta name="description" content="MD5, SHA-1, SHA-256, SHA-384, SHA-512 and CRC32 checksums for text and files, plus HMAC, computed in your browser.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    #results td:first-child { white-space: nowrap; font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-2); }
+    #results td code { overflow-wrap: anywhere; word-break: break-all; }
+    #results td:last-child { width: 1%; white-space: nowrap; }
+    #results tr.match td { background: var(--ok-soft); }
+    #progress { width: 100%; accent-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Encode &amp; decode</p>
+      <h1>Hash</h1>
+      <p class="lede">MD5, SHA-1, SHA-256, SHA-384, SHA-512 and CRC32 of text or a file, all at once. Add a key for HMAC, or paste a checksum to see which one matches.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="What to hash" id="mode">
+        <button type="button" data-value="text" aria-pressed="true">Text</button>
+        <button type="button" data-value="file" aria-pressed="false">File</button>
+      </div>
+      <span class="spacer"></span>
+      <div class="seg" role="group" aria-label="Output format" id="format">
+        <button type="button" data-value="hex" aria-pressed="true">hex</button>
+        <button type="button" data-value="HEX" aria-pressed="false">HEX</button>
+        <button type="button" data-value="base64" aria-pressed="false">Base64</button>
+      </div>
+    </div>
+
+    <section class="pane" id="text-mode" aria-label="Text">
+      <div class="pane-head">
+        <label class="pane-title" for="text">Text</label>
+        <button class="btn sm" type="button" id="sample">Sample</button>
+        <button class="btn sm" type="button" id="clear">Clear</button>
+      </div>
+      <div class="pane-body flush">
+        <textarea id="text" spellcheck="false" placeholder="Type or paste text to hash…"></textarea>
+      </div>
+      <div class="pane-foot"><span id="text-info"></span><span>Hashed as UTF-8</span></div>
+    </section>
+
+    <section class="stack" id="file-mode" aria-label="File" hidden>
+      <div class="dropzone" id="drop" aria-label="Choose a file to hash">
+        <strong>Drop a file here</strong>
+        <span class="hint">or click to choose one. Files up to 1 GB. They never leave your browser.</span>
+      </div>
+      <dl class="kv" id="file-meta" hidden></dl>
+    </section>
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="hmac-key">HMAC key (optional)</label>
+        <input type="text" id="hmac-key" spellcheck="false" autocomplete="off" placeholder="Leave empty for plain hashes">
+        <label class="check"><input type="checkbox" id="hmac-hex"> Key is hex</label>
+      </div>
+      <div class="field">
+        <label for="compare">Compare with</label>
+        <input type="text" id="compare" class="mono" spellcheck="false" autocomplete="off" placeholder="Paste an expected checksum">
+        <span class="hint">Hex ignores case, spaces and colons. Base64 must match exactly.</span>
+      </div>
+    </div>
+
+    <p class="msg" id="key-status" role="alert"></p>
+    <p class="msg" id="compare-status" role="status" aria-live="polite"></p>
+
+    <div class="stack" id="working" hidden>
+      <label class="label" for="progress" id="progress-label">Hashing…</label>
+      <progress id="progress" max="1" value="0"></progress>
+    </div>
+
+    <p class="msg" id="status" role="status" aria-live="polite"></p>
+
+    <section class="pane" id="results-pane" aria-label="Results">
+      <div class="pane-head"><span class="pane-title">Checksums</span></div>
+      <div class="pane-body">
+        <div class="table-wrap">
+          <table class="data" id="results">
+            <thead><tr><th scope="col">Algorithm</th><th scope="col">Value</th><th scope="col"><span class="sr-only">Copy</span></th></tr></thead>
+            <tbody>
+              <tr id="row-md5"><td id="name-md5">MD5</td><td><code id="value-md5"></code></td><td><button class="btn sm" type="button" data-copy="#value-md5" aria-label="Copy MD5">Copy</button></td></tr>
+              <tr id="row-sha1"><td id="name-sha1">SHA-1</td><td><code id="value-sha1"></code></td><td><button class="btn sm" type="button" data-copy="#value-sha1" aria-label="Copy SHA-1">Copy</button></td></tr>
+              <tr id="row-sha256"><td id="name-sha256">SHA-256</td><td><code id="value-sha256"></code></td><td><button class="btn sm" type="button" data-copy="#value-sha256" aria-label="Copy SHA-256">Copy</button></td></tr>
+              <tr id="row-sha384"><td id="name-sha384">SHA-384</td><td><code id="value-sha384"></code></td><td><button class="btn sm" type="button" data-copy="#value-sha384" aria-label="Copy SHA-384">Copy</button></td></tr>
+              <tr id="row-sha512"><td id="name-sha512">SHA-512</td><td><code id="value-sha512"></code></td><td><button class="btn sm" type="button" data-copy="#value-sha512" aria-label="Copy SHA-512">Copy</button></td></tr>
+              <tr id="row-crc32"><td id="name-crc32">CRC32</td><td><code id="value-crc32"></code></td><td><button class="btn sm" type="button" data-copy="#value-crc32" aria-label="Copy CRC32">Copy</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">MD5 and SHA-1 are fine for checksums but broken for security. CRC32 only catches accidental changes.</p>
+      </div>
+    </section>
+    <p class="empty" id="results-empty" hidden>Choose a file to see its checksums.</p>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

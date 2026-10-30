@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UUID · ng.foo.ng</title>
+  <meta name="description" content="Generate UUID v4 and v7, ULIDs and nanoids in your browser, or paste an ID to see its version, variant and timestamp.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 16px; align-items: end; }
+    #ids { min-height: 300px; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+    #inspect-input { font-family: var(--font-mono); }
+    fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+    fieldset:disabled .check { opacity: 0.55; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Generate</p>
+      <h1>UUID</h1>
+      <p class="lede">Generate random or time-ordered IDs: UUID v4 and v7, ULIDs and nanoids. Or paste an ID to see what is inside it.</p>
+    </header>
+
+    <section class="pane" aria-label="Generate">
+      <div class="pane-head">
+        <span class="pane-title">Generate</span>
+        <button class="btn sm primary" type="button" id="regenerate">Regenerate</button>
+        <button class="btn sm" type="button" data-copy="#ids">Copy all</button>
+        <button class="btn sm" type="button" id="download">Download .txt</button>
+      </div>
+      <div class="pane-body">
+        <div class="options">
+          <label class="field"><span>Type</span>
+            <select id="type">
+              <option value="v4">UUID v4 (random)</option>
+              <option value="v7">UUID v7 (time-ordered)</option>
+              <option value="ulid">ULID</option>
+              <option value="nanoid">nanoid</option>
+            </select>
+          </label>
+          <label class="field"><span>How many (1–1000)</span>
+            <input type="number" id="count" min="1" max="1000" step="1" value="5" inputmode="numeric">
+          </label>
+          <fieldset class="stack" id="uuid-options">
+            <legend class="sr-only">UUID format</legend>
+            <label class="check"><input type="checkbox" id="uppercase"> Upper case</label>
+            <label class="check"><input type="checkbox" id="nohyphens"> No hyphens</label>
+          </fieldset>
+        </div>
+        <div class="options" id="nanoid-options" hidden>
+          <label class="field"><span>Size</span>
+            <input type="number" id="size" min="1" max="256" step="1" value="21" inputmode="numeric">
+          </label>
+          <label class="field"><span>Alphabet</span>
+            <select id="alphabet"></select>
+          </label>
+          <label class="field" id="custom-field" hidden><span>Custom alphabet</span>
+            <input type="text" id="custom-alphabet" class="mono" spellcheck="false" autocomplete="off" value="0123456789abcdef">
+          </label>
+          <p class="hint" id="nanoid-bits"></p>
+        </div>
+        <p class="hint" id="type-hint"></p>
+        <p class="msg" id="status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="pane-body flush">
+        <textarea id="ids" readonly spellcheck="false" aria-label="Generated IDs"></textarea>
+      </div>
+      <div class="pane-foot"><span id="ids-info"></span></div>
+    </section>
+
+    <section class="pane" aria-label="Inspect an ID">
+      <div class="pane-head">
+        <label class="pane-title" for="inspect-input">Inspect</label>
+        <span class="badge" id="inspect-badge" hidden></span>
+      </div>
+      <div class="pane-body">
+        <input type="text" id="inspect-input" spellcheck="false" autocomplete="off" placeholder="Paste a UUID or ULID, e.g. 017f22e2-79b0-7cc3-98c4-dc0c0c07398f">
+        <p class="msg" id="inspect-msg" role="status" aria-live="polite"></p>
+        <dl class="kv" id="inspect-result"></dl>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

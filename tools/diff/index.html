@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diff · ng.foo.ng</title>
+  <meta name="description" content="Compare two texts line by line in your browser, with changed words highlighted and a unified diff to copy.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .diff-out { overflow-x: auto; border-radius: 0 0 var(--radius) var(--radius); }
+    table.diff { width: 100%; border-collapse: collapse; table-layout: fixed; font: 400 0.82rem/1.55 var(--font-mono); }
+    table.diff col.ln { width: 3.6em; }
+    table.diff td { padding: 1px 8px; vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; }
+    table.diff td.ln { color: var(--ink-3); text-align: right; background: var(--paper-2); user-select: none; }
+    table.diff td.code { padding-left: 1.7em; text-indent: -1.2em; }
+    table.diff .mk { display: inline-block; width: 1.2em; text-indent: 0; color: var(--ink-3); user-select: none; }
+    table.diff td.del { background: var(--err-soft); }
+    table.diff td.add { background: var(--ok-soft); }
+    table.diff td.del .mk { color: var(--err); font-weight: 700; }
+    table.diff td.add .mk { color: var(--ok); font-weight: 700; }
+    table.diff td.none { background: var(--paper-2); }
+    table.diff td.del .w { background: color-mix(in srgb, var(--err) 28%, transparent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; border-radius: 2px; }
+    table.diff td.add .w { background: color-mix(in srgb, var(--ok) 28%, transparent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; border-radius: 2px; }
+    table.diff tr.gap td { padding: 4px 8px; background: var(--paper-3); text-align: center; }
+    #context { width: auto; }
+    #status { margin: 10px; }
+    #stats { font: 500 0.82rem/1 var(--font-mono); }
+    #stats .ok-text, #stats .err-text { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Text</p>
+      <h1>Diff</h1>
+      <p class="lede">Paste two versions of a text to see which lines changed, with changed words highlighted. Copy the result as a unified diff.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="Layout" id="view">
+        <button type="button" data-value="split" aria-pressed="true">Side by side</button>
+        <button type="button" data-value="unified" aria-pressed="false">Unified</button>
+      </div>
+      <label class="check"><input type="checkbox" id="ignore-ws"> Ignore whitespace</label>
+      <label class="check"><input type="checkbox" id="ignore-case"> Ignore case</label>
+      <span class="spacer"></span>
+      <label class="check" for="context">Context lines</label>
+      <select id="context">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="3" selected>3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+
+    <section class="grid-2" aria-label="Texts to compare">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="old">Original</label>
+          <button class="btn sm" type="button" id="sample">Sample</button>
+          <button class="btn sm" type="button" id="swap">Swap</button>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="old" spellcheck="false" placeholder="Paste the original text…"></textarea>
+        </div>
+        <div class="pane-foot"><span id="old-info"></span></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="new">Changed</label>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="new" spellcheck="false" placeholder="…and the changed text"></textarea>
+        </div>
+        <div class="pane-foot"><span id="new-info"></span></div>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Differences">
+      <div class="pane-head">
+        <span class="pane-title">Differences</span>
+        <span id="stats" role="status" aria-live="polite"></span>
+        <button class="btn sm" type="button" id="copy-unified">Copy unified diff</button>
+      </div>
+      <p class="msg" id="status" role="status" aria-live="polite"></p>
+      <div class="diff-out" id="output"></div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

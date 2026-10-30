@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR code · ng.foo.ng</title>
+  <meta name="description" content="Make QR codes for links, text, Wi-Fi networks and email in your browser. Download them as SVG or PNG.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha512-ZDSPMa/JM1D+7kdg2x3BsruQ6T/JpJo3jWDWkCZsP+5yVyp1KfESqLI+7RqB5k24F7p2cV7i2YHh/890y6P6Sw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .qr-preview {
+      display: grid; place-items: center;
+      padding: 16px;
+      background: var(--paper-2);
+      border-radius: 0 0 var(--radius) var(--radius);
+      min-height: 280px;
+    }
+    .qr-preview svg { width: min(100%, 360px); height: auto; display: block; border: 1px solid var(--line); }
+    .color-row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .color-row .field { grid-template-columns: auto auto; align-items: center; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Generate</p>
+      <h1>QR code</h1>
+      <p class="lede">Make a QR code for a link, some text, a Wi-Fi network or an email. It updates as you type and never leaves your browser.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="Content type" id="kind">
+        <button type="button" data-value="text" aria-pressed="true">Text or URL</button>
+        <button type="button" data-value="wifi" aria-pressed="false">Wi-Fi</button>
+        <button type="button" data-value="email" aria-pressed="false">Email</button>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="stack">
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Content</span></div>
+          <div class="pane-body">
+            <div class="field" id="text-fields">
+              <label for="text">Text or URL</label>
+              <textarea id="text" rows="5" spellcheck="false" placeholder="https://ng.foo.ng"></textarea>
+            </div>
+
+            <div class="stack" id="wifi-fields" hidden>
+              <label class="field"><span>Network name (SSID)</span><input type="text" id="ssid" autocomplete="off" spellcheck="false"></label>
+              <div class="field">
+                <label for="wifi-auth">Security</label>
+                <select id="wifi-auth">
+                  <option value="WPA">WPA / WPA2 / WPA3</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">None</option>
+                </select>
+              </div>
+              <label class="field" id="wifi-pass-field"><span>Password</span><input type="text" id="wifi-pass" autocomplete="off" spellcheck="false"></label>
+              <label class="check"><input type="checkbox" id="wifi-hidden"> Hidden network</label>
+            </div>
+
+            <div class="stack" id="email-fields" hidden>
+              <label class="field"><span>To</span><input type="email" id="email-to" autocomplete="off" placeholder="name@example.com"></label>
+              <label class="field"><span>Subject</span><input type="text" id="email-subject" autocomplete="off"></label>
+              <div class="field">
+                <label for="email-body">Message</label>
+                <textarea id="email-body" rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Options</span></div>
+          <div class="pane-body">
+            <div class="field">
+              <span class="label" id="ecc-label">Error correction</span>
+              <div class="seg" role="group" aria-labelledby="ecc-label" id="ecc">
+                <button type="button" data-value="L" aria-pressed="false">L 7%</button>
+                <button type="button" data-value="M" aria-pressed="true">M 15%</button>
+                <button type="button" data-value="Q" aria-pressed="false">Q 25%</button>
+                <button type="button" data-value="H" aria-pressed="false">H 30%</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="margin">Margin: <span id="margin-value">4</span> modules</label>
+              <input type="range" id="margin" min="0" max="8" value="4">
+            </div>
+            <div class="field">
+              <label for="png-size">PNG size</label>
+              <select id="png-size">
+                <option value="256">256 × 256 px</option>
+                <option value="512" selected>512 × 512 px</option>
+                <option value="1024">1024 × 1024 px</option>
+                <option value="2048">2048 × 2048 px</option>
+              </select>
+            </div>
+            <div class="color-row">
+              <div class="field"><input type="color" id="fg" value="#000000"><label for="fg">Foreground</label></div>
+              <div class="field"><input type="color" id="bg" value="#ffffff"><label for="bg">Background</label></div>
+              <button class="btn sm ghost" type="button" id="reset-colors">Reset colors</button>
+            </div>
+            <p class="msg" id="color-msg" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="pane">
+          <div class="pane-head">
+            <span class="pane-title">Preview</span>
+            <button class="btn sm" type="button" id="dl-svg">Download SVG</button>
+            <button class="btn sm" type="button" id="dl-png">Download PNG</button>
+          </div>
+          <div class="pane-body flush">
+            <div class="qr-preview" id="preview" role="img" aria-label="QR code preview"></div>
+          </div>
+          <div class="pane-foot"><span id="info"></span></div>
+        </div>
+        <p class="msg" id="status" role="status" aria-live="polite"></p>
+        <div class="pane">
+          <div class="pane-head">
+            <span class="pane-title">Encoded content</span>
+            <button class="btn sm" type="button" data-copy="#payload">Copy</button>
+          </div>
+          <div class="pane-body"><pre class="out" id="payload"></pre></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

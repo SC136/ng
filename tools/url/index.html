@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL · ng.foo.ng</title>
+  <meta name="description" content="Percent-encode and decode text, and take URLs and query strings apart into editable parts, in your browser.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    #url-input { min-height: 84px; }
+    #params td { vertical-align: middle; }
+    #params td:last-child { width: 1%; }
+    #params input { font-family: var(--font-mono); font-size: 0.84rem; min-width: 6rem; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Encode &amp; decode</p>
+      <h1>URL</h1>
+      <p class="lede">Percent-encode or decode text, then take a URL apart and edit its query params. Type on either side and the other side follows.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="Encoding" id="mode">
+        <button type="button" data-value="component" aria-pressed="true">Component</button>
+        <button type="button" data-value="full" aria-pressed="false">Full URL</button>
+        <button type="button" data-value="form" aria-pressed="false">Form</button>
+      </div>
+      <span class="hint" id="mode-hint"></span>
+    </div>
+
+    <section class="grid-2" aria-label="Encode and decode">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="plain">Text</label>
+          <button class="btn sm" type="button" id="sample">Sample</button>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+          <button class="btn sm" type="button" data-copy="#plain">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="plain" spellcheck="false" placeholder="Type or paste text to encode…"></textarea>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="encoded">Encoded</label>
+          <button class="btn sm" type="button" data-copy="#encoded">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="encoded" spellcheck="false" placeholder="…or paste percent-encoded text to decode"></textarea>
+        </div>
+      </div>
+
+      <p class="msg full" id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="pane" aria-labelledby="parse-title">
+      <div class="pane-head">
+        <h2 class="pane-title" id="parse-title">Take a URL apart</h2>
+        <button class="btn sm" type="button" id="url-sample">Sample</button>
+        <button class="btn sm" type="button" data-copy="#url-input">Copy URL</button>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="url-input">URL or query string</label>
+          <textarea id="url-input" spellcheck="false" autocomplete="off" placeholder="https://example.com/path?key=value#section"></textarea>
+        </div>
+        <p class="msg" id="parse-status" role="status" aria-live="polite"></p>
+        <div class="grid-2" id="parse-result" hidden>
+          <div class="stack">
+            <h3>Parts</h3>
+            <dl class="kv" id="url-parts"></dl>
+          </div>
+          <div class="stack">
+            <div class="row">
+              <h3>Query params</h3>
+              <span class="spacer"></span>
+              <button class="btn sm" type="button" id="add-param">Add param</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="params">
+                <thead><tr><th scope="col">Key</th><th scope="col">Value</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead>
+                <tbody id="params-body"></tbody>
+              </table>
+            </div>
+            <p class="empty" id="params-empty">No query params. Add one to put it in the URL.</p>
+            <p class="hint">Edits rebuild the URL above. Values are shown decoded and re-encoded with + for spaces.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

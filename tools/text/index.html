@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text · ng.foo.ng</title>
+  <meta name="description" content="Change text case, make URL slugs, sort and dedupe lines, clean up whitespace and count words and characters in your browser.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .ops { display: grid; gap: 14px; }
+    .ops .label { display: block; margin-bottom: 6px; }
+    .ops .row .btn { font-variant-ligatures: none; }
+    .ops .row .mono-btn { font-family: var(--font-mono); font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Text</p>
+      <h1>Text</h1>
+      <p class="lede">Change case, make slugs, sort, dedupe and tidy lines. Pick a transform and the result appears on the right. Counts update as you type.</p>
+    </header>
+
+    <section class="pane" aria-label="Counts for the input">
+      <div class="pane-body">
+        <div class="stats">
+          <div class="stat"><b id="st-chars">0</b><span>Characters</span></div>
+          <div class="stat"><b id="st-nospace">0</b><span>Without spaces</span></div>
+          <div class="stat"><b id="st-words">0</b><span>Words</span></div>
+          <div class="stat"><b id="st-lines">0</b><span>Lines</span></div>
+          <div class="stat"><b id="st-paras">0</b><span>Paragraphs</span></div>
+          <div class="stat"><b id="st-bytes">0</b><span>UTF-8 bytes</span></div>
+          <div class="stat"><b id="st-read">0 min</b><span>Reading time</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Transforms">
+      <div class="pane-body ops">
+        <div>
+          <span class="label" id="case-label">Case</span>
+          <div class="row" role="group" aria-labelledby="case-label">
+            <button class="btn sm" type="button" data-op="case-lower">lower case</button>
+            <button class="btn sm" type="button" data-op="case-upper">UPPER CASE</button>
+            <button class="btn sm" type="button" data-op="case-title">Title Case</button>
+            <button class="btn sm" type="button" data-op="case-sentence">Sentence case</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-camel">camelCase</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-pascal">PascalCase</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-snake">snake_case</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-kebab">kebab-case</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-constant">CONSTANT_CASE</button>
+            <button class="btn sm mono-btn" type="button" data-op="case-dot">dot.case</button>
+            <button class="btn sm mono-btn" type="button" data-op="slug">slugify</button>
+          </div>
+        </div>
+        <div>
+          <span class="label" id="lines-label">Lines</span>
+          <div class="row" role="group" aria-labelledby="lines-label">
+            <button class="btn sm" type="button" data-op="sort-az">Sort A–Z</button>
+            <button class="btn sm" type="button" data-op="sort-za">Sort Z–A</button>
+            <button class="btn sm" type="button" data-op="sort-natural">Natural sort</button>
+            <button class="btn sm" type="button" data-op="reverse">Reverse</button>
+            <button class="btn sm" type="button" data-op="shuffle">Shuffle</button>
+            <button class="btn sm" type="button" data-op="dedupe">Remove duplicates</button>
+            <label class="check"><input type="checkbox" id="dedupe-ci"> Ignore case for duplicates</label>
+            <button class="btn sm" type="button" data-op="remove-empty">Remove empty</button>
+            <button class="btn sm" type="button" data-op="trim-lines">Trim each</button>
+            <button class="btn sm" type="button" data-op="number">Number</button>
+          </div>
+        </div>
+        <div>
+          <span class="label" id="ws-label">Whitespace</span>
+          <div class="row" role="group" aria-labelledby="ws-label">
+            <button class="btn sm" type="button" data-op="trim">Trim</button>
+            <button class="btn sm" type="button" data-op="collapse-spaces">Collapse spaces</button>
+            <button class="btn sm" type="button" data-op="remove-breaks">Remove line breaks</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2" aria-label="Text">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="input">Input</label>
+          <button class="btn sm" type="button" id="sample">Sample</button>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+          <button class="btn sm" type="button" data-copy="#input">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="input" spellcheck="false" placeholder="Type or paste text…"></textarea>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="output">Output</label>
+          <button class="btn sm" type="button" id="use">Use as input</button>
+          <button class="btn sm" type="button" data-copy="#output">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="output" spellcheck="false" readonly placeholder="Pick a transform above"></textarea>
+        </div>
+        <div class="pane-foot"><span id="output-info" role="status" aria-live="polite"></span></div>
+      </div>
+
+      <p class="msg full" id="status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

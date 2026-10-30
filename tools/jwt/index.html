@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JWT · ng.foo.ng</title>
+  <meta name="description" content="Decode JSON Web Tokens, read their claims, verify HMAC, RSA, ECDSA and EdDSA signatures, and sign HMAC tokens in your browser.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    #token { min-height: 140px; word-break: break-all; }
+    #token-view { word-break: break-all; }
+    .jwt-h { color: var(--accent-text); }
+    .jwt-p { color: var(--indigo); }
+    .jwt-s { color: var(--ok); }
+    .jwt-dot { color: var(--ink-3); }
+    .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 500 0.76rem/1.4 var(--font-mono); }
+    #claims td:first-child { font-family: var(--font-mono); white-space: nowrap; }
+    #claims td { overflow-wrap: anywhere; }
+    #public-key { min-height: 120px; }
+    #signed { min-height: 100px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Encode &amp; decode</p>
+      <h1>JWT</h1>
+      <p class="lede">Paste a JSON Web Token to read its header, payload and claims, and check its signature with a secret or public key. Or sign a new HMAC token.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="Mode" id="mode">
+        <button type="button" data-value="decode" aria-pressed="true">Decode and verify</button>
+        <button type="button" data-value="sign" aria-pressed="false">Sign</button>
+      </div>
+    </div>
+
+    <section class="stack" id="decode-mode" aria-label="Decode and verify">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="token">Token</label>
+          <button class="btn sm" type="button" id="sample">Sample</button>
+          <button class="btn sm" type="button" id="clear">Clear</button>
+          <button class="btn sm" type="button" data-copy="#token">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="token" spellcheck="false" autocomplete="off" placeholder="eyJhbGciOi…  (a leading “Bearer ” is fine)"></textarea>
+        </div>
+      </div>
+
+      <p class="msg" id="decode-status" role="status" aria-live="polite"></p>
+
+      <div class="stack" id="decoded" hidden>
+        <div class="row" id="badges" aria-label="Token status"></div>
+
+        <div class="pane">
+          <div class="pane-head">
+            <span class="pane-title">Token by part</span>
+            <span class="legend" aria-hidden="true"><span class="jwt-h">■ Header</span><span class="jwt-p">■ Payload</span><span class="jwt-s">■ Signature</span></span>
+          </div>
+          <div class="pane-body">
+            <p class="out" id="token-view"></p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">Header</span>
+              <button class="btn sm" type="button" data-copy="#header-json">Copy</button>
+            </div>
+            <div class="pane-body flush"><pre class="out" id="header-json"></pre></div>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">Payload</span>
+              <button class="btn sm" type="button" data-copy="#payload-json">Copy</button>
+            </div>
+            <div class="pane-body flush"><pre class="out" id="payload-json"></pre></div>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Claims</span></div>
+          <div class="pane-body">
+            <div class="table-wrap">
+              <table class="data" id="claims">
+                <thead><tr><th scope="col">Claim</th><th scope="col">Meaning</th><th scope="col">Value</th></tr></thead>
+                <tbody id="claims-body"></tbody>
+              </table>
+            </div>
+            <p class="empty" id="claims-empty" hidden>No registered claims (iss, sub, aud, exp, nbf, iat, jti) in this payload.</p>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Verify signature</span><span class="badge info" id="verify-alg"></span></div>
+          <div class="pane-body">
+            <div class="stack" id="secret-field">
+              <label class="field"><span>Secret</span><input type="text" id="secret" spellcheck="false" autocomplete="off" placeholder="your-256-bit-secret"></label>
+              <label class="check"><input type="checkbox" id="secret-b64"> Secret is Base64</label>
+            </div>
+            <div class="field" id="key-field" hidden>
+              <label for="public-key">Public key (PEM or JWK)</label>
+              <textarea id="public-key" spellcheck="false" autocomplete="off" placeholder="-----BEGIN PUBLIC KEY-----&#10;…&#10;-----END PUBLIC KEY-----"></textarea>
+              <span class="hint">SPKI PEM, a JWK, or a JWK set (picked by the token's kid).</span>
+            </div>
+            <p class="msg" id="verify-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack" id="sign-mode" aria-label="Sign" hidden>
+      <div class="row">
+        <div class="seg" role="group" aria-label="Algorithm" id="sign-alg">
+          <button type="button" data-value="HS256" aria-pressed="true">HS256</button>
+          <button type="button" data-value="HS384" aria-pressed="false">HS384</button>
+          <button type="button" data-value="HS512" aria-pressed="false">HS512</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="sign-header">Header</label>
+          <textarea id="sign-header" spellcheck="false" rows="5"></textarea>
+          <span class="hint">alg is set from the choice above.</span>
+        </div>
+        <div class="field">
+          <label for="sign-payload">Payload</label>
+          <textarea id="sign-payload" spellcheck="false" rows="8"></textarea>
+          <div class="row">
+            <button class="btn sm" type="button" id="add-iat">Set iat to now</button>
+            <button class="btn sm" type="button" id="add-exp">Expire in 1 hour</button>
+          </div>
+        </div>
+      </div>
+      <label class="field"><span>Secret</span><input type="text" id="sign-secret" spellcheck="false" autocomplete="off"></label>
+      <label class="check"><input type="checkbox" id="sign-b64"> Secret is Base64</label>
+      <p class="msg" id="sign-status" role="status" aria-live="polite"></p>
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="signed">Signed token</label>
+          <button class="btn sm" type="button" id="open-signed">Decode it</button>
+          <button class="btn sm" type="button" data-copy="#signed">Copy</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="signed" readonly spellcheck="false" placeholder="Fill in a payload and secret to get a token"></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

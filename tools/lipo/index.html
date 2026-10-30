@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LiPo · ng.foo.ng</title>
+  <meta name="description" content="LiPo, LiHV and Li-ion pack voltages, max current, energy, flight time, charge time and state of charge from voltage.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Hardware &amp; bits</p>
+      <h1>LiPo</h1>
+      <p class="lede">Pack voltages, max current and energy for lithium batteries, with flight-time, charge-time and state-of-charge estimates.</p>
+    </header>
+
+    <section class="grid-2" aria-label="Pack">
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Pack</span></div>
+        <div class="pane-body">
+          <div class="field">
+            <span class="label" id="chem-label">Chemistry</span>
+            <div class="seg" role="group" aria-labelledby="chem-label" id="chem">
+              <button type="button" data-value="lipo" aria-pressed="true">LiPo</button>
+              <button type="button" data-value="lihv" aria-pressed="false">LiHV</button>
+              <button type="button" data-value="liion" aria-pressed="false">Li-ion</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <label class="field"><span>Cells in series (S)</span><select id="cells"></select></label>
+            <label class="field"><span>Cells in parallel (P)</span><input id="parallel" type="number" min="1" max="20" step="1" value="1"></label>
+            <label class="field"><span>Capacity per cell (mAh)</span><input id="capacity" type="number" min="1" step="any" inputmode="decimal" value="1500"></label>
+            <label class="field"><span>C rating (continuous)</span><input id="crating" type="number" min="0" step="any" inputmode="decimal" value="100"></label>
+            <label class="field"><span>Pack weight (g, optional)</span><input id="weight" type="number" min="0" step="any" inputmode="decimal" placeholder="180"></label>
+          </div>
+          <p class="hint">For a normal 1P pack, the capacity per cell is the number on the label.</p>
+          <p class="msg" id="pack-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title" id="pack-title">4S1P LiPo</span></div>
+        <div class="pane-body">
+          <div class="stats" id="pack-stats" aria-live="polite"></div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th scope="col">Level</th><th scope="col">Per cell</th><th scope="col">Pack</th></tr></thead>
+              <tbody id="voltages"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2" aria-label="Flight time and charging">
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Flight time</span></div>
+        <div class="pane-body">
+          <div class="grid-2">
+            <label class="field"><span>Average current (A)</span><input id="avg-current" type="number" min="0" step="any" inputmode="decimal" placeholder="18"></label>
+            <label class="field"><span>Usable capacity (%)</span><input id="usable" type="number" min="1" max="100" step="1" value="80"></label>
+          </div>
+          <dl class="kv" id="flight-current-out" aria-live="polite"></dl>
+          <hr>
+          <p class="hint">Or estimate hover time from the weight of the whole aircraft and how many grams of thrust it makes per watt.</p>
+          <div class="grid-2">
+            <label class="field"><span>All-up weight (g)</span><input id="auw" type="number" min="0" step="any" inputmode="decimal" placeholder="600"></label>
+            <label class="field"><span>Efficiency (g/W)</span><input id="gpw" type="number" min="0" step="any" inputmode="decimal" placeholder="4"></label>
+          </div>
+          <dl class="kv" id="flight-weight-out" aria-live="polite"></dl>
+          <p class="msg" id="flight-msg" role="status"></p>
+          <p class="hint">Both are rough estimates. Wind, throttle and battery age change real flight time a lot.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Charging</span></div>
+          <div class="pane-body">
+            <label class="field"><span>Charge rate (C)</span><input id="charge-c" type="number" min="0.1" max="10" step="0.1" value="1"></label>
+            <dl class="kv" id="charge-out" aria-live="polite"></dl>
+            <p class="msg" id="charge-msg" role="status"></p>
+            <p class="hint">1C is the safe default. Only charge faster if the battery says it supports it.</p>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">State of charge (approximate)</span></div>
+          <div class="pane-body">
+            <label class="field"><span>Resting voltage (V)</span><input id="rest-v" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3.85"></label>
+            <label class="check"><input type="checkbox" id="whole-pack"> This is the whole pack voltage</label>
+            <div class="stats" id="soc-out" aria-live="polite"></div>
+            <p class="msg" id="soc-msg" role="status"></p>
+            <p class="hint">Measure after the pack has rested for at least 30 minutes with nothing connected. Curves vary between cells, so treat this as a guide.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Safety">
+      <div class="pane-head"><span class="pane-title">Safety</span></div>
+      <div class="pane-body">
+        <p class="hint">Charge with a balance charger on a non-flammable surface and never leave charging packs unattended. Don't discharge below the landing voltage under load. Store packs at storage voltage. Stop using any pack that is puffed, damaged or gets hot.</p>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

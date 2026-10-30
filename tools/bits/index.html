@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bits · ng.foo.ng</title>
+  <meta name="description" content="Convert numbers between binary, octal, decimal and hex, see two's complement bit patterns and inspect IEEE-754 float32 and float64 values bit by bit.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .num-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
+    .num-row select { width: auto; }
+    .num-row input[type="number"] { width: 5.5em; }
+    @media (max-width: 560px) { .num-row { grid-template-columns: minmax(0, 1fr) auto; } .num-row > :first-child { grid-column: 1 / -1; } }
+    .bases td:first-child { width: 6em; color: var(--ink-3); font-size: 0.78rem; }
+    .bases td:last-child { width: 1%; }
+    .bases output { overflow-wrap: anywhere; }
+    .bitgrid { display: grid; gap: 10px; }
+    .bitrow { display: grid; gap: 4px; }
+    .bitrow-label { font: 500 0.7rem/1 var(--font-mono); color: var(--ink-3); }
+    .bitcells { display: grid; grid-template-columns: repeat(var(--cols, 16), minmax(0, 1fr)); gap: 2px; }
+    .bit {
+      appearance: none; min-width: 0; height: 32px; padding: 0;
+      border: 1px solid var(--line-2); border-radius: 5px;
+      background: var(--field); color: var(--ink-3);
+      font: 500 0.82rem/1 var(--font-mono); cursor: pointer;
+    }
+    .bit[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); font-weight: 700; }
+    .bit:hover { border-color: var(--ink-3); }
+    /* Space between bytes. */
+    .bitcells .bit:nth-child(8n+1):not(:first-child) { margin-left: 4px; }
+    .float-bits .bit.sign { border-style: double; border-width: 3px; }
+    .float-bits .bit.exp { border-style: dashed; }
+    .float-bits .bit.man { border-radius: 0; }
+    .bit small { display: block; font-size: 0.55rem; font-weight: 500; color: var(--ink-3); margin-top: 1px; }
+    .fields td:first-child { white-space: nowrap; }
+    .fields .bitstr { overflow-wrap: anywhere; letter-spacing: 0.04em; }
+    .exact { margin: 0; max-height: 9.5em; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Hardware &amp; bits</p>
+      <h1>Bits</h1>
+      <p class="lede">Convert integers between bases, see their two's complement bits at any width, and take IEEE-754 floats apart bit by bit.</p>
+    </header>
+
+    <section class="grid-2" aria-label="Integer">
+      <div class="pane">
+        <div class="pane-head"><h2 class="pane-title">Number</h2></div>
+        <div class="pane-body">
+          <div class="num-row">
+            <label class="field"><span>Value</span><input type="text" id="num" class="mono" spellcheck="false" autocomplete="off" placeholder="255, -42, 0xff, 0b1010"></label>
+            <label class="field"><span>Base</span>
+              <select id="base">
+                <option value="auto">Auto (0x, 0b, 0o)</option>
+                <option value="2">Binary (2)</option>
+                <option value="8">Octal (8)</option>
+                <option value="10">Decimal (10)</option>
+                <option value="16">Hex (16)</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </label>
+            <label class="field" id="custom-field" hidden><span>Radix</span><input type="number" id="custom-base" min="2" max="36" step="1" value="36"></label>
+          </div>
+          <p class="msg" id="num-msg" role="status" aria-live="polite"></p>
+          <div class="table-wrap">
+            <table class="data bases">
+              <tbody>
+                <tr><td>Binary</td><td><output id="out-bin"></output></td><td><button class="btn sm" type="button" id="copy-bin" data-copy-text="" aria-label="Copy binary">Copy</button></td></tr>
+                <tr><td>Octal</td><td><output id="out-oct"></output></td><td><button class="btn sm" type="button" id="copy-oct" data-copy-text="" aria-label="Copy octal">Copy</button></td></tr>
+                <tr><td>Decimal</td><td><output id="out-dec"></output></td><td><button class="btn sm" type="button" id="copy-dec" data-copy-text="" aria-label="Copy decimal">Copy</button></td></tr>
+                <tr><td>Hex</td><td><output id="out-hex"></output></td><td><button class="btn sm" type="button" id="copy-hex" data-copy-text="" aria-label="Copy hex">Copy</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <h2 class="pane-title" id="tc-title">Two's complement</h2>
+          <div class="seg" role="group" aria-label="Bit width" id="width">
+            <button type="button" data-value="8" aria-pressed="false">8</button>
+            <button type="button" data-value="16" aria-pressed="false">16</button>
+            <button type="button" data-value="32" aria-pressed="true">32</button>
+            <button type="button" data-value="64" aria-pressed="false">64</button>
+            <button type="button" data-value="128" aria-pressed="false">128</button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <p class="msg" id="width-msg" role="status" aria-live="polite"></p>
+          <dl class="kv">
+            <dt>Bits (hex)</dt><dd id="tc-hex"></dd>
+            <dt>Signed</dt><dd id="tc-signed"></dd>
+            <dt>Unsigned</dt><dd id="tc-unsigned"></dd>
+            <dt>Signed range</dt><dd id="tc-range"></dd>
+          </dl>
+          <div class="stats">
+            <div class="stat"><b id="popcount">0</b><span>Bits set</span></div>
+            <div class="stat"><b id="clz">0</b><span>Leading zeros</span></div>
+            <div class="stat"><b id="ctz">0</b><span>Trailing zeros</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-labelledby="grid-title">
+      <div class="pane-head">
+        <h2 class="pane-title" id="grid-title">Bits</h2>
+        <span class="hint">Click a bit to flip it.</span>
+      </div>
+      <div class="pane-body">
+        <div class="bitgrid" id="bit-grid" role="group" aria-labelledby="grid-title"></div>
+        <div class="table-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td>Big endian</td><td><output id="bytes-be"></output></td><td><button class="btn sm" type="button" data-copy="#bytes-be" aria-label="Copy big-endian bytes">Copy</button></td></tr>
+              <tr><td>Little endian</td><td><output id="bytes-le"></output></td><td><button class="btn sm" type="button" data-copy="#bytes-le" aria-label="Copy little-endian bytes">Copy</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-labelledby="float-title">
+      <div class="pane-head">
+        <h2 class="pane-title" id="float-title">IEEE-754 float</h2>
+        <div class="seg" role="group" aria-label="Float size" id="float-kind">
+          <button type="button" data-value="f32" aria-pressed="true">float32</button>
+          <button type="button" data-value="f64" aria-pressed="false">float64</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="grid-2">
+          <label class="field"><span>Decimal</span><input type="text" id="float-dec" class="mono" spellcheck="false" autocomplete="off" placeholder="0.1, -2.5e-3, NaN, -Infinity, -0"></label>
+          <label class="field"><span>Bits as hex</span><input type="text" id="float-hex" class="mono" spellcheck="false" autocomplete="off" placeholder="3dcccccd"></label>
+        </div>
+        <p class="msg" id="float-msg" role="status" aria-live="polite"></p>
+        <div class="table-wrap">
+          <table class="data fields">
+            <thead><tr><th scope="col">Field</th><th scope="col">Bits</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>Sign</td><td class="bitstr" id="f-sign-bits"></td><td id="f-sign-val"></td></tr>
+              <tr><td>Exponent</td><td class="bitstr" id="f-exp-bits"></td><td id="f-exp-val"></td></tr>
+              <tr><td>Mantissa</td><td class="bitstr" id="f-man-bits"></td><td id="f-man-val"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stack float-bits">
+          <p class="hint">S = sign (double border), E = exponent (dashed), M = mantissa (square). Click a bit to flip it.</p>
+          <div class="bitgrid" id="float-grid" role="group" aria-label="Float bits"></div>
+        </div>
+        <dl class="kv">
+          <dt>Class</dt><dd><span class="badge" id="f-class"></span></dd>
+          <dt>Hex</dt><dd><output id="f-hex"></output> <button class="btn sm" type="button" data-copy="#f-hex">Copy</button></dd>
+          <dt>Stored value</dt><dd><output id="f-stored"></output></dd>
+          <dt>Exact value</dt><dd><pre class="out exact" id="f-exact"></pre><button class="btn sm" type="button" data-copy="#f-exact">Copy exact value</button></dd>
+        </dl>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

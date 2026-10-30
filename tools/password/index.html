@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Password · ng.foo.ng</title>
+  <meta name="description" content="Generate strong random passwords and PINs in your browser, with an honest entropy and crack-time estimate.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .pw-list { list-style: none; margin: 0; padding: 0; display: grid; }
+    .pw-list li { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--line); min-width: 0; }
+    .pw-list li:last-child { border-bottom: 0; }
+    .pw-list code { flex: 1 1 auto; min-width: 0; font-size: 0.95rem; overflow-wrap: anywhere; color: var(--ink); }
+    .len-row { display: flex; align-items: center; gap: 12px; }
+    .len-row input[type="number"] { width: 84px; flex: none; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Generate</p>
+      <h1>Password</h1>
+      <p class="lede">Random passwords and PINs from your browser's secure random generator. Nothing is sent or saved.</p>
+    </header>
+
+    <div class="row">
+      <div class="seg" role="group" aria-label="What to generate" id="mode">
+        <button type="button" data-value="password" aria-pressed="true">Password</button>
+        <button type="button" data-value="pin" aria-pressed="false">PIN</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn primary" type="button" id="generate">Generate</button>
+    </div>
+
+    <section class="grid-2">
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Options</span></div>
+        <div class="pane-body">
+          <div class="field">
+            <label for="length">Length</label>
+            <div class="len-row">
+              <input type="range" id="length-range" min="4" max="128" value="20" aria-label="Length slider">
+              <input type="number" id="length" min="4" max="128" value="20" inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="stack" id="password-options">
+            <div class="row">
+              <label class="check"><input type="checkbox" id="lower" checked> Lowercase (a–z)</label>
+              <label class="check"><input type="checkbox" id="upper" checked> Uppercase (A–Z)</label>
+              <label class="check"><input type="checkbox" id="digits" checked> Digits (0–9)</label>
+              <label class="check"><input type="checkbox" id="symbols" checked> Symbols</label>
+            </div>
+            <div class="field">
+              <label for="symbol-set">Symbol set</label>
+              <input type="text" id="symbol-set" class="mono" spellcheck="false" autocomplete="off">
+            </div>
+            <label class="check"><input type="checkbox" id="ambiguous"> Exclude look-alikes (I l 1 | O 0 o and quotes)</label>
+            <div class="field">
+              <label for="exclude">Exclude these characters</label>
+              <input type="text" id="exclude" class="mono" spellcheck="false" autocomplete="off" placeholder="e.g. {}[]">
+            </div>
+            <label class="check"><input type="checkbox" id="require" checked> At least one from each chosen set</label>
+          </div>
+
+          <div class="field">
+            <label for="count">How many</label>
+            <input type="number" id="count" min="1" max="50" value="5" inputmode="numeric">
+          </div>
+          <p class="msg" id="status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Strength</span><span class="badge" id="strength"></span></div>
+          <div class="pane-body">
+            <div class="stats">
+              <div class="stat"><b id="bits">0</b><span>Bits of entropy</span></div>
+              <div class="stat"><b id="pool">0</b><span>Possible characters</span></div>
+            </div>
+            <p class="hint" id="crack"></p>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head">
+            <span class="pane-title">Results</span>
+            <button class="btn sm" type="button" id="copy-all">Copy all</button>
+          </div>
+          <div class="pane-body flush">
+            <ul class="pw-list" id="results" aria-live="polite"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Not found · ng.foo.ng</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <style>
+    #lost { visibility: hidden; }
+    #lost.show { visibility: visible; }
+  </style>
+  <script type="module">
+    // Short links: GitHub Pages serves this page for every unknown path, so look the path up in links.json.
+    import { LINKS_FILE, resolveShortLink } from '/assets/links.js';
+    import { TOOLS, toolUrl } from '/assets/tools.js';
+
+    const lost = document.querySelector('#lost');
+    const distance = (a, b) => {
+      const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+      for (let i = 1; i <= a.length; i++) {
+        let prev = row[0];
+        row[0] = i;
+        for (let j = 1; j <= b.length; j++) {
+          const next = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+          prev = row[j];
+          row[j] = next;
+        }
+      }
+      return row[b.length];
+    };
+
+    function showNotFound(links) {
+      const word = location.pathname.split('/').filter(Boolean).pop()?.toLowerCase() ?? '';
+      const options = [
+        ...TOOLS.map((tool) => ({ label: `/tools/${tool.slug}/`, href: toolUrl(tool), key: tool.slug })),
+        ...Object.keys(links).map((slug) => ({ label: `/${slug}`, href: `/${slug}`, key: slug })),
+      ];
+      const near = word ? options.filter((o) => distance(word, o.key) <= Math.max(1, Math.floor(o.key.length / 3))).slice(0, 4) : [];
+      const list = document.querySelector('#suggest');
+      for (const option of near) {
+        const a = document.createElement('a');
+        a.href = option.href;
+        a.textContent = option.label;
+        list.append(a);
+      }
+      document.querySelector('#suggest-wrap').hidden = !near.length;
+      lost.classList.add('show');
+      import('/assets/shell.js');
+    }
+
+    let links = {};
+    try {
+      links = await (await fetch(LINKS_FILE, { cache: 'no-cache' })).json();
+    } catch {}
+    const target = resolveShortLink(location.pathname, location.search, location.hash, links);
+    if (target) {
+      document.querySelector('#going').textContent = `Taking you to ${target}`;
+      location.replace(target);
+    } else {
+      showNotFound(links);
+    }
+  </script>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <p class="muted" id="going" role="status"></p>
+    <div id="lost" class="stack">
+      <header class="tool-head">
+        <p class="eyebrow">404</p>
+        <h1>NG. This page is no good.</h1>
+        <p class="lede">There's nothing at this address, and it isn't one of the short links either.</p>
+      </header>
+      <div class="stack" id="suggest-wrap" hidden>
+        <p class="label">Did you mean</p>
+        <div class="link-list" id="suggest"></div>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/">Go home</a>
+        <a class="btn" href="/tools/">All tools</a>
+        <a class="btn" href="/tools/links/">Short links</a>
+      </div>
+    </div>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

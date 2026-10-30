@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Short links · ng.foo.ng</title>
+  <meta name="description" content="Every ng.foo.ng short link with copy, open and QR buttons, plus a helper for adding a new link to links.json.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .link-list { list-style: none; margin: 0; padding: 0; display: grid; }
+    .link-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+    .link-list li:last-child { border-bottom: 0; }
+    .link-list .short { font: 500 0.92rem/1.3 var(--font-mono); color: var(--ink); overflow-wrap: anywhere; }
+    .link-list .target { font-size: 0.8rem; color: var(--ink-3); overflow-wrap: anywhere; }
+    .link-list .actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+    @media (max-width: 560px) {
+      .link-list li { grid-template-columns: minmax(0, 1fr); }
+      .link-list .actions { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / This site</p>
+      <h1>Short links</h1>
+      <p class="lede">Every short link on this site. Each one works at ng.foo.ng/&lt;slug&gt; and redirects to its target.</p>
+    </header>
+
+    <section class="grid-2">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="search">Links</label>
+          <span class="spacer"></span>
+          <span class="hint" id="count-info" aria-live="polite"></span>
+        </div>
+        <div class="pane-body">
+          <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Search slugs and targets">
+          <p class="msg" id="load-msg" role="status"></p>
+        </div>
+        <ul class="link-list" id="list" aria-label="Short links"></ul>
+      </div>
+
+      <div class="stack">
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">How they work</span></div>
+          <div class="pane-body">
+            <p class="hint">Open <code>ng.foo.ng/&lt;slug&gt;</code> and you are sent to the target. Case and a trailing slash don't matter.</p>
+            <p class="hint">Extra path segments pass through to the target: <code>ng.foo.ng/gh/ng</code> goes to <code>github.com/SC136/ng</code>. A query string is added to the target too.</p>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head"><span class="pane-title">Add a link</span></div>
+          <div class="pane-body">
+            <div class="grid-2">
+              <div class="field">
+                <label for="new-slug">Slug</label>
+                <input id="new-slug" class="mono" type="text" autocomplete="off" spellcheck="false" placeholder="blog" aria-describedby="slug-msg">
+                <span class="hint" id="slug-msg" aria-live="polite"></span>
+              </div>
+              <div class="field">
+                <label for="new-url">Target URL</label>
+                <input id="new-url" class="mono" type="url" autocomplete="off" spellcheck="false" placeholder="https://example.com" aria-describedby="url-msg">
+                <span class="hint" id="url-msg" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="stack" id="snippet-box" hidden>
+              <p class="hint">Short link: <span class="mono" id="new-short"></span></p>
+              <div class="field">
+                <label for="snippet">Line to add to links.json</label>
+                <textarea id="snippet" class="mono" rows="2" readonly spellcheck="false"></textarea>
+              </div>
+              <p class="hint" id="placement"></p>
+              <div class="row">
+                <button class="btn sm" type="button" data-copy="#snippet">Copy line</button>
+                <a class="btn sm primary" id="edit" target="_blank" rel="noopener noreferrer">Edit links.json on GitHub</a>
+              </div>
+            </div>
+            <p class="hint">Slugs use lowercase letters, digits and hyphens. Changes go live once the edit is merged.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ohm's law · ng.foo.ng</title>
+  <meta name="description" content="Ohm's law and power from any two values, voltage dividers, LED series resistors and series or parallel resistance.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    .stat b.given { color: var(--ink-3); }
+    .formulas { margin: 0; padding-left: 18px; font-family: var(--font-mono); font-size: 0.86rem; display: grid; gap: 4px; }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Hardware &amp; bits</p>
+      <h1>Ohm's law</h1>
+      <p class="lede">Voltage, current, resistance and power, plus voltage dividers, LED resistors and resistors in series or parallel. Values accept prefixes like 20m, 4k7 or 1M.</p>
+    </header>
+
+    <div class="seg" role="group" aria-label="Calculator" id="tab">
+      <button type="button" data-value="ohm" aria-pressed="true">Ohm's law</button>
+      <button type="button" data-value="divider" aria-pressed="false">Voltage divider</button>
+      <button type="button" data-value="led" aria-pressed="false">LED resistor</button>
+      <button type="button" data-value="sp" aria-pressed="false">Series/parallel</button>
+    </div>
+
+    <section class="grid-2" id="panel-ohm" aria-label="Ohm's law">
+      <div class="pane">
+        <div class="pane-head">
+          <span class="pane-title">Enter any two</span>
+          <button class="btn sm" type="button" id="ohm-clear">Clear</button>
+        </div>
+        <div class="pane-body">
+          <div class="grid-2">
+            <label class="field"><span>Voltage V (volts)</span><input id="ohm-v" class="mono" type="text" autocomplete="off" spellcheck="false" placeholder="12"></label>
+            <label class="field"><span>Current I (amps)</span><input id="ohm-i" class="mono" type="text" autocomplete="off" spellcheck="false" placeholder="20m"></label>
+            <label class="field"><span>Resistance R (ohms)</span><input id="ohm-r" class="mono" type="text" autocomplete="off" spellcheck="false" placeholder="4k7"></label>
+            <label class="field"><span>Power P (watts)</span><input id="ohm-p" class="mono" type="text" autocomplete="off" spellcheck="false" placeholder="250m"></label>
+          </div>
+          <p class="msg" id="ohm-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Result</span></div>
+        <div class="pane-body">
+          <div class="stats" id="ohm-stats" aria-live="polite"></div>
+          <ul class="formulas" id="ohm-formulas" aria-label="Formulas used"></ul>
+          <p class="hint">V = I × R and P = V × I. The other formulas follow from these two.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2" id="panel-divider" aria-label="Voltage divider" hidden>
+      <div class="pane">
+        <div class="pane-head">
+          <span class="pane-title">Divider</span>
+          <span class="spacer"></span>
+          <div class="seg" role="group" aria-label="What to find" id="div-mode">
+            <button type="button" data-value="vout" aria-pressed="true">Find Vout</button>
+            <button type="button" data-value="r2" aria-pressed="false">Find R2</button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <p class="hint">Vin connects to R1, R1 to R2, R2 to ground. Vout is taken across R2, with no load attached.</p>
+          <div class="grid-2">
+            <label class="field"><span>Input voltage Vin</span><input id="div-vin" class="mono" type="text" autocomplete="off" spellcheck="false" value="5"></label>
+            <label class="field"><span>R1 (top)</span><input id="div-r1" class="mono" type="text" autocomplete="off" spellcheck="false" value="10k"></label>
+            <label class="field" id="div-r2-field"><span>R2 (bottom)</span><input id="div-r2" class="mono" type="text" autocomplete="off" spellcheck="false" value="20k"></label>
+            <label class="field" id="div-vout-field" hidden><span>Target Vout</span><input id="div-vout" class="mono" type="text" autocomplete="off" spellcheck="false" value="3.3"></label>
+          </div>
+          <p class="msg" id="div-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Result</span></div>
+        <div class="pane-body" id="div-out" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="grid-2" id="panel-led" aria-label="LED resistor" hidden>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">LEDs</span></div>
+        <div class="pane-body">
+          <div class="grid-2">
+            <label class="field"><span>Supply voltage</span><input id="led-supply" class="mono" type="text" autocomplete="off" spellcheck="false" value="5"></label>
+            <label class="field"><span>LED color</span><select id="led-color"></select></label>
+            <label class="field"><span>Forward voltage per LED</span><input id="led-vf" class="mono" type="text" autocomplete="off" spellcheck="false" value="2"></label>
+            <label class="field"><span>Forward current</span><input id="led-current" class="mono" type="text" autocomplete="off" spellcheck="false" value="20m"></label>
+            <label class="field"><span>LEDs in series</span><input id="led-count" type="number" min="1" max="100" step="1" value="1"></label>
+          </div>
+          <p class="hint">Forward voltages are typical values. Check the LED's datasheet when you have it.</p>
+          <p class="msg" id="led-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Series resistor</span></div>
+        <div class="pane-body" id="led-out" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="grid-2" id="panel-sp" aria-label="Series and parallel" hidden>
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="sp-list">Resistances</label>
+          <button class="btn sm" type="button" id="sp-clear">Clear</button>
+        </div>
+        <div class="pane-body flush">
+          <textarea id="sp-list" spellcheck="false" rows="6" placeholder="One per line, or separated by commas: 100, 4k7, 1M">1k, 2k2, 4k7</textarea>
+        </div>
+        <div class="pane-foot"><span id="sp-info"></span></div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><span class="pane-title">Totals</span></div>
+        <div class="pane-body">
+          <div class="stats" id="sp-out" aria-live="polite"></div>
+          <p class="msg" id="sp-msg" role="status"></p>
+          <p class="hint">Series: R = R1 + R2 + … Parallel: 1/R = 1/R1 + 1/R2 + …</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>

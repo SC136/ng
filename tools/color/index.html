@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Color · ng.foo.ng</title>
+  <meta name="description" content="Convert colors between HEX, RGB, HSL, HWB, OKLCH and OKLab, check WCAG contrast and build an 11-step shade scale.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/shell.js"></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    /* Checkerboard so translucent colors read as translucent. */
+    .checker {
+      background-color: var(--card);
+      background-image:
+        linear-gradient(45deg, var(--line) 25%, transparent 25%, transparent 75%, var(--line) 75%),
+        linear-gradient(45deg, var(--line) 25%, transparent 25%, transparent 75%, var(--line) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+    .preview { height: 120px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); overflow: hidden; }
+    .preview > div { width: 100%; height: 100%; }
+    .color-row { display: flex; gap: 8px; align-items: center; }
+    .color-row input[type="text"] { flex: 1 1 auto; font-family: var(--font-mono); }
+    .formats td:first-child { width: 7.5em; color: var(--ink-3); font-size: 0.78rem; }
+    .formats td:last-child { width: 1%; text-align: right; }
+    .formats output { user-select: all; }
+    .ratio-line { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+    .ratio-line b { font: 400 2.6rem/1 var(--font-display); }
+    .levels { display: grid; gap: 6px; }
+    .levels li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 0.86rem; }
+    .levels ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .levels .badge { min-width: 5.6em; justify-content: center; }
+    .sample-wrap { border: 1px solid var(--line-2); border-radius: var(--radius-sm); overflow: hidden; }
+    .sample { height: 100%; padding: 18px; display: grid; gap: 8px; align-content: center; }
+    .sample .big { font-size: 24px; line-height: 1.2; }
+    .sample .small { font-size: 15px; }
+    .sample .ui { display: inline-block; width: fit-content; padding: 6px 12px; border: 2px solid; border-radius: 8px; font-size: 0.85rem; }
+    .shades { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+    .shade {
+      appearance: none; display: grid; gap: 4px; padding: 0 0 8px; overflow: hidden;
+      border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--card); color: var(--ink);
+      font: 500 0.75rem/1.2 var(--font-mono); cursor: pointer; text-align: center;
+    }
+    .shade:hover { border-color: var(--ink-3); }
+    .shade .chipcolor { display: block; height: 48px; border-bottom: 1px solid var(--line); }
+    .shade[aria-current="true"] { outline: 2px solid var(--indigo); outline-offset: 1px; }
+    .shade small { color: var(--ink-3); }
+  </style>
+</head>
+<body>
+  <div data-shell="header"></div>
+  <main class="tool" id="main">
+    <header class="tool-head">
+      <p class="eyebrow"><a href="/tools/">Tools</a> / Color &amp; images</p>
+      <h1>Color</h1>
+      <p class="lede">Paste any CSS color to see it as HEX, RGB, HSL, HWB, OKLCH and OKLab. Check text contrast against WCAG and build a shade scale.</p>
+    </header>
+
+    <section class="grid-2" aria-label="Convert">
+      <div class="pane">
+        <div class="pane-head">
+          <label class="pane-title" for="color-input">Color</label>
+          <span class="badge warn" id="gamut-badge" hidden>Gamut mapped</span>
+          <button class="btn sm" type="button" id="random">Random</button>
+        </div>
+        <div class="pane-body">
+          <div class="color-row">
+            <input type="color" id="color-picker" aria-label="Pick a color">
+            <input type="text" id="color-input" spellcheck="false" autocomplete="off" placeholder="#3b82f6, rgb(59 130 246), oklch(…), rebeccapurple">
+          </div>
+          <p class="hint">Hex (3, 4, 6 or 8 digits), rgb(), hsl(), hwb(), oklch(), oklab() and the 148 CSS color names.</p>
+          <div class="preview checker"><div id="preview" role="img" aria-label="Color preview"></div></div>
+          <p class="msg" id="color-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <span class="pane-title">Formats</span>
+          <button class="btn sm" type="button" id="use-fg">Use as text</button>
+          <button class="btn sm" type="button" id="use-bg">Use as background</button>
+        </div>
+        <div class="pane-body">
+          <div class="table-wrap">
+            <table class="data formats">
+              <tbody>
+                <tr><td>HEX</td><td><output id="out-hex"></output></td><td><button class="btn sm" type="button" data-copy="#out-hex">Copy</button></td></tr>
+                <tr id="row-hexa" hidden><td>HEX + alpha</td><td><output id="out-hexa"></output></td><td><button class="btn sm" type="button" data-copy="#out-hexa">Copy</button></td></tr>
+                <tr><td>RGB</td><td><output id="out-rgb"></output></td><td><button class="btn sm" type="button" data-copy="#out-rgb">Copy</button></td></tr>
+                <tr><td>HSL</td><td><output id="out-hsl"></output></td><td><button class="btn sm" type="button" data-copy="#out-hsl">Copy</button></td></tr>
+                <tr><td>HWB</td><td><output id="out-hwb"></output></td><td><button class="btn sm" type="button" data-copy="#out-hwb">Copy</button></td></tr>
+                <tr><td>OKLCH</td><td><output id="out-oklch"></output></td><td><button class="btn sm" type="button" data-copy="#out-oklch">Copy</button></td></tr>
+                <tr><td>OKLab</td><td><output id="out-oklab"></output></td><td><button class="btn sm" type="button" data-copy="#out-oklab">Copy</button></td></tr>
+                <tr id="row-name" hidden><td>Name</td><td><output id="out-name"></output></td><td><button class="btn sm" type="button" data-copy="#out-name">Copy</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-labelledby="contrast-title">
+      <div class="pane-head">
+        <h2 class="pane-title" id="contrast-title">Contrast</h2>
+        <button class="btn sm" type="button" id="swap">Swap</button>
+      </div>
+      <div class="pane-body">
+        <div class="grid-2">
+          <div class="field">
+            <label for="fg-input">Text</label>
+            <div class="color-row">
+              <input type="color" id="fg-picker" aria-label="Pick the text color">
+              <input type="text" id="fg-input" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="bg-input">Background</label>
+            <div class="color-row">
+              <input type="color" id="bg-picker" aria-label="Pick the background color">
+              <input type="text" id="bg-input" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+        </div>
+        <p class="msg" id="contrast-msg" role="alert"></p>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="ratio-line" role="status" aria-live="polite">
+              <b id="ratio">–</b><span class="muted">WCAG 2 contrast ratio</span>
+            </div>
+            <div class="levels"><ul id="levels"></ul></div>
+          </div>
+          <div class="sample-wrap checker">
+            <div class="sample" id="sample">
+              <span class="big">Large text, 24 px</span>
+              <span class="small">Normal text at 15 px. The quick brown fox jumps over the lazy dog.</span>
+              <span class="ui">Button outline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" aria-labelledby="shades-title">
+      <div class="pane-head">
+        <h2 class="pane-title" id="shades-title">Shades</h2>
+        <span class="hint">OKLCH lightness steps. Click one to copy its hex.</span>
+      </div>
+      <div class="pane-body">
+        <div class="shades" id="shades"></div>
+      </div>
+    </section>
+  </main>
+  <div data-shell="footer"></div>
+</body>
+</html>
