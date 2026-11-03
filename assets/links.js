@@ -8,7 +8,7 @@ export const EDIT_URL = 'https://github.com/SC136/ng/edit/main/links.json';
 
 // Top-level names that are real paths on the site (or might become one), so they can't be slugs.
 export const RESERVED = new Set([
-  '404', 'assets', 'cname', 'docs', 'favicon.ico', 'index', 'index.html', 'lab', 'links.json',
+  '404', 'assets', 'cname', 'css', 'docs', 'favicon.ico', 'index', 'index.html', 'lab', 'links.json',
   'node_modules', 'package.json', 'readme', 'readme.md', 'robots.txt', 'scripts', 'sitemap.xml',
   'tests', 'tools',
 ]);
